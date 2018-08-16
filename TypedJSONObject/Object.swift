@@ -4,23 +4,23 @@ import Foundation
  Internal protocol. This is exposed to your application just because of Swift's limitation.
  */
 public protocol ObjectProtocol : class {
-    init()
-    func _internalRead(object: [String : AnyObject], block: Any -> Void) throws
-    func _internalWrite(block: Any -> Void) throws -> [String : AnyObject]
+     init()
+     func _internalRead(object: [String : AnyObject], block: Any -> Void) throws
+     func _internalWrite(block: Any -> Void) throws -> [String : AnyObject]
 }
 
-public extension ObjectProtocol {
-    /**
-     Takes JSON object dictionary and yields given block with typed object.
-     Throws an exception if given object is invalid.
-     */
-    static func readJSON<T>(object: [String: AnyObject], block: Self -> T) throws -> T {
-        var result: T! = nil
-        try Self()._internalRead(object) { this in
-            result = block(this as! Self)
-        }
-        return result
-    }
+ public extension ObjectProtocol {
+     /**
+      Takes JSON object dictionary and yields given block with typed object.
+      Throws an exception if given object is invalid.
+      */
+     static func readJSON<T>(object: [String: AnyObject], block: Self -> T) throws -> T {
+         var result: T! = nil
+         try Self()._internalRead(object) { this in
+             result = block(this as! Self)
+         }
+         return result
+     }
     
     /**
      Takes JSON array and yields given block with typed object.
@@ -28,26 +28,26 @@ public extension ObjectProtocol {
      Returned array is optional because the JSON array may contain null.
      Throws `JSONObjectError.ArrayContainsUnexpectedElement` if array contains value other than object.
      */
-    static func readJSONArray<T>(array: [AnyObject], block: Self -> T) throws -> [T?] {
-        var result: [T?] = []
-        
-        try array.enumerate().forEach { pair in
-            let index = pair.index
-            let element = pair.element
-            
-            switch element {
-            case is NSNull:
-                result.append(nil)
-            case let object as [String: AnyObject]:
+     static func readJSONArray<T>(array: [AnyObject], block: Self -> T) throws -> [T?] {
+         var result: [T?] = []
+         
+         try array.enumerate().forEach { pair in
+             let index = pair.index
+             let element = pair.element
+             
+             switch element {
+             case is NSNull:
+                 result.append(nil)
+             case let object as [String: AnyObject]:
                 let value = try Self.readJSON(object, block: block)
                 result.append(value)
-            default:
-                throw JSONObjectError.ArrayContainsUnexpectedElement(index: index, element: element)
-            }
-        }
-        
-        return result
-    }
+             default:
+                 throw JSONObjectError.ArrayContainsUnexpectedElement(index: index, element: element)
+             }
+         }
+         
+         return result
+     }
     
     /**
      Takes block to update to generate JSON object dictionary, and return a dictionary.
